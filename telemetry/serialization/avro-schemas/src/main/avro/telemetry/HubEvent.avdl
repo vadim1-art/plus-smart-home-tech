@@ -1,4 +1,83 @@
 @namespace("ru.yandex.practicum.kafka.telemetry.event")
 protocol HubEventProtocol {
 
+	enum DeviceTypeAvro {
+		MOTION_SENSOR,
+		TEMPERATURE_SENSOR,
+		LIGHT_SENSOR,
+		CLIMATE_SENSOR,
+		SWITCH_SENSOR
+	}
+
+	enum ConditionTypeAvro {
+		MOTION,
+		LUMINOSITY,
+		SWITCH,
+		TEMPERATURE,
+		CO2LEVEL,
+		HUMIDITY
+	}
+
+	enum ConditionOperationAvro {
+		EQUALS,
+		GREATER_THAN,
+		LOWER_THAN
+	}
+
+	enum ActionTypeAvro {
+		ACTIVATE,
+		DEACTIVATE,
+		INVERSE,
+		SET_VALUE
+	}
+
+	// Событие добавления устройства
+	record DeviceAddedEventAvro {
+		string id;
+		DeviceTypeAvro type;
+	}
+
+	// Событие удаления устройства
+	record DeviceRemovedEventAvro {
+		string id;
+	}
+
+	// Описание условия в сценарии
+	record ScenarioConditionAvro {
+		string sensor_id;
+		ConditionTypeAvro type;
+		ConditionOperationAvro operation;
+		union { null, int, boolean } value = null;
+	}
+
+	// Описание действия в сценарии
+	record DeviceActionAvro {
+		string sensor_id;
+		ActionTypeAvro type;
+		union { null, int } value = null;
+	}
+
+	// Событие добавления сценария
+	record ScenarioAddedEventAvro {
+		string name;
+		array<ScenarioConditionAvro> conditions;
+		array<DeviceActionAvro> actions;
+	}
+
+	// Событие удаления сценария
+	record ScenarioRemovedEventAvro {
+		string name;
+	}
+
+	// Главная обёртка для всех событий хаба
+	record HubEventAvro {
+		string hub_id;
+		timestamp_ms timestamp;
+		union {
+			DeviceAddedEventAvro,
+			DeviceRemovedEventAvro,
+			ScenarioAddedEventAvro,
+			ScenarioRemovedEventAvro
+		} payload;
+	}
 }
